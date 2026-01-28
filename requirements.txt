@@ -1,3 +1,4 @@
 flask
 google-generativeai
-protobuf
+selenium
+webdriver-manager
