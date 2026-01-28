@@ -1,12 +1,14 @@
-const { default: makeWASocket, useMultiFileAuthState, delay, fetchLatestBaileysVersion } = require("@whiskeysockets/baileys")
+const { default: makeWASocket, useMultiFileAuthState, delay, fetchLatestBaileysVersion, DisconnectReason } = require("@whiskeysockets/baileys")
 const pino = require('pino')
 const express = require('express')
 const app = express()
 
-app.get('/', (req, res) => res.send('Zepox AI: Mfumo Imara Unafanya Kazi'))
+// Hii inazuia Render isizime (keeps the server alive)
+app.get('/', (req, res) => res.send('Zepox AI: Mfumo Uko Imara'))
 app.listen(process.env.PORT || 10000)
 
-async function start() {
+async function startZepox() {
+    // Tunatumia 'auth_info' kuhifadhi session yako mtandaoni (RAM inalindwa)
     const { state, saveCreds } = await useMultiFileAuthState('auth_info')
     const { version } = await fetchLatestBaileysVersion()
     
@@ -15,13 +17,17 @@ async function start() {
         auth: state,
         printQRInTerminal: false,
         logger: pino({ level: 'silent' }),
-        // HII SEHEMU CHINI NDIYO INAFANYA IONEKANE KAMA SIMU YA KAWAIDA
-        browser: ["Zepox AI", "Chrome", "1.0.0"] 
+        // Hii sehemu inadanganya WhatsApp kuwa hii ni simu ya Android na siyo bot
+        browser: ["Android", "Chrome", "11.0.0"] 
     })
 
     sock.ev.on('connection.update', async (update) => {
-        const { connection } = update
-        if (connection === 'open') {
+        const { connection, lastDisconnect } = update
+        if (connection === 'close') {
+            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut
+            console.log('Muunganisho umekatika, najaribu tena...', shouldReconnect)
+            if (shouldReconnect) startZepox()
+        } else if (connection === 'open') {
             console.log("HONGERA! WHATSAPP IMEUNGANISHWA TAYARI!")
         }
     })
@@ -30,16 +36,10 @@ async function start() {
         console.log("Inatengeneza kodi isiyo na 'Spam'... Subiri sekunde 15...")
         await delay(15000)
         try {
-            // Namba yako tuliyoweka kwenye Environment Variables Render
+            // Inasoma namba uliyoweka kwenye Render Settings
             const phone = process.env.PHONE_NUMBER || "255699121547"
             const code = await sock.requestPairingCode(phone)
             console.log("\n" + "=".repeat(30))
             console.log("KODI YAKO MPYA: " + code)
             console.log("=".repeat(30) + "\n")
-        } catch (err) {
-            console.log("Hitilafu: Jaribu kufanya 'Clear Build Cache' Render.")
-        }
-    }
-    sock.ev.on('creds.update', saveCreds)
-}
-start()
+        } catch (err
