@@ -29,13 +29,14 @@ async function startZepox() {
     })
 
     if (!sock.authState.creds.registered) {
-        console.log("Inatengeneza kodi... Subiri sekunde 15...")
+        console.log("Inatengeneza kodi ya namba ya zamani... Subiri sekunde 15...")
         await delay(15000)
         try {
-            const phone = "255699121547"
+            // Namba yako ya zamani imerejeshwa hapa
+            const phone = "255699121547" 
             const code = await sock.requestPairingCode(phone)
             console.log("\n" + "=".repeat(30))
-            console.log("KODI YAKO MPYA: " + code)
+            console.log("KODI YAKO MPYA (Zamani): " + code)
             console.log("=".repeat(30) + "\n")
         } catch (err) {
             console.log("Jaribu tena kurestart Render.")
